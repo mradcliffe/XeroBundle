@@ -62,28 +62,22 @@ class XeroClient extends Client
             throw new FileNotFoundException('Unable able to find file: ' . $config['private_key']);
         }
 
-        $privateKey = file_get_contents($config['private_key']);
-
-        $config['signature_method'] = 'RSA-SHA1';
-        $config['signature_callback'] = function ($baseString) use ($privateKey) {
-            $signature = '';
-            $privateKeyId = openssl_pkey_get_private($privateKey);
-            openssl_sign($baseString, $signature, $privateKeyId);
-            openssl_free_key($privateKeyId);
-            return $signature;
-        };
-
-        if ($config['signature_callback'] === '') {
-            throw new \Exception('Could not create signature from key');
+        // Do not obliterate a stack that may be passed into the client.
+        if (isset($config['handler']) && is_a($config['handler'], '\GuzzleHttp\HandlerStack')) {
+            $stack = $config['handler'];
+        } else {
+            $stack = HandlerStack::create();
         }
 
-        $stack = HandlerStack::create();
         // Create an oauth middleware and push it onto the handler stack.
         $middleware = new Oauth1([
             'consumer_key' => $config['consumer_key'],
             'consumer_secret' => $config['consumer_secret'],
             'token' => $config['token'],
             'token_secret' => $config['token_secret'],
+            'private_key_file' => $config['private_key'],
+            'private_key_passphrase' => NULL,
+            'signature_method' => Oauth1::SIGNATURE_METHOD_RSA,
         ]);
         $stack->push($middleware);
 
