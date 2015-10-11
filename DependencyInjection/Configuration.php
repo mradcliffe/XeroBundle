@@ -25,7 +25,7 @@ class Configuration implements ConfigurationInterface
                     ->defaultValue(self::APPLICATION_TYPE_PRIVATE)
                 ->end()
                 ->scalarNode('base_url')
-                    ->defaultValue('https://api.xero.com/api.xro/2.0')
+                    ->defaultValue('https://api.xero.com/api.xro/2.0/')
                 ->end()
                 ->scalarNode('consumer_key')
                     ->isRequired()
